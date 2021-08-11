@@ -5,13 +5,17 @@ registers = {"R0": "000","R1": "001","R2": "010","R3": "011","R4": "100","R5": "
 var_dict = {}  # Stores the variable name with the memory address allocated to the variable
 label_dict  = {} #Stores the variable name with the memory address allocated to the label
 instruction_count = 0
+line_count=1
 l2 = []
+out=[]
 error=False
 def _8bit(n):  # Function to convert a binary number to 8 bit binary number
     x = bin(n)[2:]
     num = 8 - len(x)
     return "0" * num + x
 def inst_to_bin(instruction_list):
+    global line_count
+    global error
     binary_instruction = ""
     # getting opcode
     if instruction_list[0] in opcode.keys():
@@ -24,100 +28,98 @@ def inst_to_bin(instruction_list):
                 binary_instruction += opcode[instruction_list[0]][2]
         if instruction_list[0] != "mov": # getting type and values accordingly
             if opcode[instruction_list[0]][1] == "RRR":  # type A
-            
               if len(instruction_list) == 4 and instruction_list[1] in registers.keys() and instruction_list[2] in registers.keys() and instruction_list[3] in registers.keys():
                 
                 if registers[instruction_list[1]] != "111" and registers[instruction_list[2]] != "111" and registers[instruction_list[3]] != "111":
                   binary_instruction = binary_instruction + "00" + registers[instruction_list[1]] + registers[instruction_list[2]] + registers[instruction_list[3]]
-                  print(binary_instruction)
+                  out.append(binary_instruction)
                 else:
                   error = True
-                  print("Illegal use of FLAGS register")
-
+                  print("[ERROR] Illegal use of FLAGS register at line "+str(line_count))
               else: 
                 error =  True
-                print("invalid syntax")
-                
-            elif opcode[instruction_list[0]][1] == "R$":  # type B
-            
-                if len(instruction_list) == 3 and 0 <= int(instruction_list[2][1:]) >= 255 and instruction_list[1] in registers.keys():
-                                    
+                print("[ERROR] Invalid Syntax at line "+str(line_count))
+            elif opcode[instruction_list[0]][1] == "R$":  # type B            
+                if len(instruction_list) == 3 and instruction_list[1] in registers.keys() and instruction_list[2][1:].isdigit():
+                  if 0 <= int(instruction_list[2][1:]) <= 255:                  
                     if registers[instruction_list[1]] != "111":           
-                      binary_instruction = binary_instruction + registers[instruction_list[1]] + _8bit(instruction_list[2])
-                      print(binary_instruction)
+                      binary_instruction = binary_instruction + registers[instruction_list[1]] + _8bit(int(instruction_list[2][1:]))
+                      out.append(binary_instruction)
                     else:
                       error = True
-                      print("Illegal use of FLAGS register")   
-                      
+                      print("[ERROR] Illegal use of FLAGS register at line " +str(line_count))  
+                  else:
+                    error = True
+                    print("[ERROR] Illegal immediate value at line " +str(line_count))                    
                 else:  
                   error =  True
-                print("invalid syntax")
-
+                  print("[ERROR] Invalid Syntax at line " +str(line_count))
             elif opcode[instruction_list[0]][1] == "RR":  # type C
-
               if len(instruction_list) == 3 and instruction_list[1] in registers.keys() and instruction_list[2] in registers.keys():
-                
                 if registers[instruction_list[1]] != "111" and registers[instruction_list[2]] != "111":
                   binary_instruction = binary_instruction + "00000" + registers[instruction_list[1]] + registers[instruction_list[2]]
-                  print(binary_instruction)
+                  out.append(binary_instruction)
                 else:
                   error = True
-                  print("Illegal use of FLAGS register")   
-
+                  print("[ERROR] Illegal use of FLAGS register at line "+str(line_count))   
               else:
                 error =  True
-                print("invalid syntax")
-
+                print("[ERROR] Invalid Syntax at line "+str(line_count))
             elif opcode[instruction_list[0]][1] == "Rm":  # type D
-
               if len(instruction_list) == 3 and instruction_list[1] in registers.keys():  
-
                 if registers[instruction_list[1]] != "111":
                   if instruction_list[2] in var_dict.keys():
                     binary_instruction = binary_instruction + registers[instruction_list[1]] + var_dict[instruction_list[2]]
-                    print(binary_instruction)
+                    out.append(binary_instruction)
                   else:
                     error = True
-                    print("Use of undefined variable")
+                    print("[ERROR] Use of undefined variable at line "+str(line_count))
                 else:
                   error = True
-                  print("Illegal use of FLAGS register") 
-
+                  print("[ERROR] Illegal use of FLAGS register at line "+str(line_count)) 
               else:
-                error =  True
-                print("invalid syntax")
-
+                error = True
+                print("[ERROR] Invalid Syntax at line "+str(line_count))
             elif opcode[instruction_list[0]][1] == "m":  # type E
               if instruction_list[1] in label_dict:
                 binary_instruction = binary_instruction + "000" + label_dict[instruction_list[1]]
-                print(binary_instruction)
+                out.append(binary_instruction)
               else:
-                print("label undefined")
+                print("[ERROR]label Undefined at line "+str(line_count))
             elif opcode[instruction_list[0]][1] == "F":  # type F
                 binary_instruction = binary_instruction + "0" * 11
-                print(binary_instruction)
+                out.append(binary_instruction)
         else:
             if instruction_list[2][0] == "$":
-
-              if len(instruction_list) == 2 and instruction_list[1] in registers.keys():
-        
-                if registers[instruction_list[1]] != "111":
-                  binary_instruction = binary_instruction + registers[instruction_list[1]] + _8bit(int(instruction_list[2][1:]))
-                  print(binary_instruction)
+              if len(instruction_list) == 3 and instruction_list[1] in registers.keys() and instruction_list[2][1:].isdigit():
+                if 0 <= int(instruction_list[2][1:]) <= 255:
+                  if registers[instruction_list[1]] != "111":
+                    binary_instruction = binary_instruction + registers[instruction_list[1]] + _8bit(int(instruction_list[2][1:]))
+                    out.append(binary_instruction)
+                  else:
+                    error = True
+                    print("[ERROR] Illegal use of FLAGS register at line "+str(line_count))
                 else:
                   error = True
-                  print("Illegal use of FLAGS register")
-              
+                  print("[ERROR] Illegal Immediate Value at line "+str(line_count))
               else:
                 error =  True
-                print("invalid syntax")
-
+                print("[ERROR] Invalid Syntax at line "+str(line_count))
             else:
-
-                binary_instruction = binary_instruction + "00000" + registers[instruction_list[1]] + registers[instruction_list[2]]
-                print(binary_instruction)
-
-
+              if instruction_list[1] in registers and instruction_list[2] in registers:
+                if registers[instruction_list[1]] != "111":
+                  binary_instruction = binary_instruction + "00000" + registers[instruction_list[1]] + registers[instruction_list[2]]
+                  out.append(binary_instruction)
+                else:
+                  error = True
+                  print("[ERROR] Illegal use of FLAGS register at line " +str(line_count))
+              else:
+                error =  True
+                print("[ERROR] Invalid Syntax at line " +str(line_count))
+    else:
+      print("[ERROR] Invalid Operation Call at line " +str(line_count))
+      error=True
+line_count1=1
 for i in l:  # Gives final list of instructions without empty lines
     if i != '''\n''':
         l2.append(i)
@@ -125,14 +127,19 @@ for i in l:  # Gives final list of instructions without empty lines
             instruction_count += 1
         elif (i.strip().split()[0][-1] == ":"):  # identifying a label declaration
             if (i.strip().split()[0][:-1] not in label_dict):
+              if i.strip().split()[0][:-1] not in opcode.keys():
                 label_dict[i.strip().split()[0][:-1]] = _8bit(instruction_count)
                 instruction_count += 1
+              elif(not error):
+                error = True
+                print("[ERROR] Invalid Label Name at line",line_count1)
+    line_count1+=1
 hlt_chk=l2[-1].strip().split()
-if(len(hlt_chk)==2):                                          #Checking that program ends with halt statement
+if(len(hlt_chk)==2):                                     #Checking that program ends with halt statement
   if(hlt_chk[0][-1]==":" and hlt_chk[1]=="hlt"):
     pass
   else:
-    print("[ERROR] Program does not end with halt statement")
+    print("[ERROR] Program does not end with halt statement") 
     error=True
 elif(len(hlt_chk)==1):
   if(hlt_chk[0]!="hlt"):
@@ -147,32 +154,39 @@ else:
   print("[ERROR] Program does not end with halt statement")
   error=True
 pre_var_dec=True
-for i in l2[:-1]:
+line_count2=1
+for i in l[:-1]:
+  if(i!='''\n'''):
+    if(error):
+      break
     tempvar = i.strip().split()
     if (tempvar[0] == "var" and pre_var_dec):  # identifying a variable declaration
         if (tempvar[1] not in var_dict):
             var_dict[tempvar[1]] = _8bit(instruction_count)
             instruction_count += 1
         else:
-            print("Variable already exists")   #[ERROR] Redecleration of same variable
+            print("[ERROR] Variable redeclared at line",line_count2)   #[ERROR] Redecleration of same variable
             error=True
             break
     elif(tempvar[0] == "var" and not pre_var_dec):
-      print("Variable not declared at the start")  #[ERROR] Variable not declared at the start 
+      print("[ERROR] Variable declared at line" ,line_count2,"instead of at the start")  #[ERROR] Variable not declared at the start 
       error=True
       break
     else:
       pre_var_dec=False
     if(tempvar[0]=="hlt"):
-      print("[ERROR] Halt statement used before termination")
+      print("[ERROR] Halt statement used before termination at line",line_count2) #[ERROR] Halt statement used before EOF
       error=True
       break
     elif(tempvar[0][-1]==":" and tempvar[1]=="hlt"):
       error=True
-      print("[ERROR] Halt statement used before termination")
+      print("[ERROR] Halt statement used before termination at line",line_count2) #[ERROR] Halt stament used before EOF as a label
       break
-      
-for i in l2:
+  line_count2+=1
+for i in l:         #Line count handled
+  if(i!='''\n'''):
+    if(error):
+      break
     instruction_list = i.strip().split()
     # getting opcode
     if (instruction_list[0] != "var" and instruction_list[0][-1] != ":"):
@@ -180,3 +194,9 @@ for i in l2:
     elif (instruction_list[0][-1] == ":"):
         if len(instruction_list[1:]) > 0:
           inst_to_bin((instruction_list[1:]))
+  line_count=line_count+1
+if(not error):
+  for i in out:
+    print(i)
+else:
+  pass
