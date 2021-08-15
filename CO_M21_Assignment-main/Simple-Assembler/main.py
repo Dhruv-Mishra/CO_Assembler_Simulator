@@ -156,19 +156,19 @@ try:
     if(hlt_chk[0][-1]==":" and hlt_chk[1]=="hlt"):
       pass
     else:
-      print("[ERROR] Program does not end with halt statement") 
+      print("[ERROR] Half statement not used at EOF") 
       error=True
   elif(len(hlt_chk)==1):
     if(hlt_chk[0]!="hlt"):
-      print("[ERROR] Program does not end with halt statement")
+      print("[ERROR] Half statement not used at EOF")
       error=True
     elif(hlt_chk[0]=="hlt"):
       pass
     else:
-      print("[ERROR] Program does not end with halt statement")
+      print("[ERROR] Half statement not used at EOF")
       error=True
   else:
-    print("[ERROR] Program does not end with halt statement")
+    print("[ERROR] Half statement not used at EOF")
     error=True
   pre_var_dec=True
   line_count2=1
@@ -178,7 +178,16 @@ try:
         break
       tempvar = i.strip().split()
       if (tempvar[0] == "var" and pre_var_dec):  # identifying a variable declaration
-          if (tempvar[1] not in var_dict):
+          varflag=True
+          lll=tempvar[1].split("_")
+          for i in lll:
+            if(not i.isalnum()):
+              varflag=False
+          if(not varflag):
+              print("[ERROR] Invalid Variable Name at line",line_count2)
+              error=True
+              break
+          elif (tempvar[1] not in var_dict):
               var_dict[tempvar[1]] = _8bit(instruction_count)
               instruction_count += 1
           else:
@@ -208,7 +217,16 @@ try:
       if (instruction_list[0] != "var" and instruction_list[0][-1] != ":"):
           inst_to_bin(instruction_list)
       elif (instruction_list[0][-1] == ":"):
-          if len(instruction_list)>=2:
+          labelflag=True
+          ll2 = instruction_list[0][:-1].split("_")
+          for i in ll2:
+            if(not i.isalnum()):
+              labelflag=False
+          if(not labelflag):
+              print("[ERROR] Invalid Label Name at line",line_count)
+              error=True
+              break
+          elif len(instruction_list)>=2:
             inst_to_bin((instruction_list[1:]))
           else:
             print("[ERROR] Empty Label")
