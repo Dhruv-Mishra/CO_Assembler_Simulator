@@ -7,6 +7,13 @@ try:
       l.append(i+"\n")
     else:
       l.append("\n")
+  xx=len(l)-1
+  while(True):
+    if(l[xx]=="\n"):
+      l=l[:xx]
+      xx=xx-1
+    else:
+      break
   opcode = {"add": ("00000", "RRR"),"sub": ("00001", 'RRR'),"mov": ("00010", 'R$', "00011", 'RR'),"ld": ("00100", "Rm"),"st": ("00101", "Rm"),"mul": ("00110", "RRR"),"div": ("00111", "RR"),"rs": ("01000", "R$"),"ls": ("01001", "R$"),"xor": ("01010", "RRR"),"or": ("01011", "RRR"),"and": ("01100", "RRR"),"not": ("01101", "RR"),"cmp": ("01110", "RR"),"jmp": ("01111", "m"),"jlt": ("10000", "m"),"jgt": ("10001", "m"),"je": ("10010", "m"),"hlt": ("10011", "F")}
   registers = {"R0": "000","R1": "001","R2": "010","R3": "011","R4": "100","R5": "101","R6": "110","FLAGS": "111"}
   var_dict = {}  # Stores the variable name with the memory address allocated to the variable
@@ -156,19 +163,19 @@ try:
     if(hlt_chk[0][-1]==":" and hlt_chk[1]=="hlt"):
       pass
     else:
-      print("[ERROR] Half statement not used at EOF") 
+      print("[ERROR] Halt statement not used at EOF") 
       error=True
   elif(len(hlt_chk)==1):
     if(hlt_chk[0]!="hlt"):
-      print("[ERROR] Half statement not used at EOF")
+      print("[ERROR] Halt statement not used at EOF")
       error=True
     elif(hlt_chk[0]=="hlt"):
       pass
     else:
-      print("[ERROR] Half statement not used at EOF")
+      print("[ERROR] Halt statement not used at EOF")
       error=True
   else:
-    print("[ERROR] Half statement not used at EOF")
+    print("[ERROR] Halt statement not used at EOF")
     error=True
   pre_var_dec=True
   line_count2=1
