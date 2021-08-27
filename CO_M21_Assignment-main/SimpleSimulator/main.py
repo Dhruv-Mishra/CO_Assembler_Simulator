@@ -9,11 +9,10 @@ for i in f1:
 memory = memory + (256 - len(memory)) * [0]
 pcl = []
 
-
 def add(s):
     registers[reg[s[2:5]]] = registers[reg[s[5:8]]] + registers[reg[s[8:11]]]
     if (registers[reg[s[2:5]]] > max_val):
-        registers[reg[2:5]] = int(bin(int(registers[reg[s[2:5]]]))[2:][-16:], 2)
+        registers[reg[s[2:5]]] = int(bin(int(registers[reg[s[2:5]]]))[2:][-16:], 2)
         registers[7][0] = 1
 
 
@@ -48,31 +47,31 @@ def movimm(s):
 
 
 def rs(s):
-    registers[reg[s[:3]]] >> int(s[3:], 2)
+    registers[reg[s[:3]]] = registers[reg[s[:3]]] >> int(s[3:], 2)
     if registers[reg[s[:3]]] > max_val:
-        registers[reg[s[:3]]] = int(bin(int(registers[s[reg[:3]]]))[2:][-16:], 2)
+        registers[reg[s[:3]]] = int(bin(int(registers[reg[s[:3]]]))[2:][-16:], 2)
         registers[7][0] = 1
 
-
 def ls(s):
-    registers[reg[s[:3]]] << int(s[3:], 2)
+    registers[reg[s[:3]]] = registers[reg[s[:3]]] << int(s[3:], 2)
     if registers[reg[s[:3]]] > max_val:
         registers[reg[s[0:3]]] = int(bin(int(registers[reg[s[:3]]]))[2:][-16:], 2)
         registers[7][0] = 1
 
-
 def Not(s):
+    alpha = registers[reg[s[8:]]]
+    new = _16bit(alpha)
+    #print(alpha)
     x = ""
-    for i in s:
+    for i in new:
         x += str(int(i) ^ 1)
+    #print(x)
     num = int(x, 2)
     registers[reg[s[5:8]]] = num
-
 
 def div(s):
     registers[0] = registers[reg[s[5:8]]] // registers[reg[s[8:11]]]
     registers[1] = registers[reg[s[5:8]]] % registers[reg[s[8:11]]]
-
 
 def movreg(s):
     if reg[s[8:]] != 7:
@@ -89,10 +88,8 @@ def cmp(s):
     else:
         registers[7][1] = 1
 
-
 def load(s):
     registers[reg[s[:3]]] = memory[int(s[3:], 2)]
-
 
 def store(s):
     memory[int(s[3:], 2)] = registers[reg[s[:3]]]
